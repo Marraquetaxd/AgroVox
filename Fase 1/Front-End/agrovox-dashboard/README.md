@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AgroVox Dashboard - Fase 1 (Front-End)
 
-## Getting Started
+Interfaz de monitoreo para la red de nodos IoT del proyecto AgroVox. Desarrollado con Next.js, Tailwind CSS y Lucide Icons.
 
-First, run the development server:
+---
 
-```bash
+## Guía rápida para el equipo (Cómo levantar el proyecto en tu PC)
+
+Sigue estos pasos exactamente en este orden para evitar errores de dependencias o rutas.
+
+### Paso 1: Descargar los últimos cambios
+Abre una terminal en tu computador, ve a la carpeta donde sueles guardar tus proyectos y clona el repositorio (si ya lo tienes, solo haz `git pull origin main`):
+\`\`\`bash
+git clone https://github.com/Marraquetaxd/AgroVox.git
+\`\`\`
+
+### Paso 2: Abrir la carpeta correcta en VS Code (IMPORTANTE)
+No abras la carpeta raíz del repositorio completo. Debes abrir específicamente la carpeta del proyecto Next.js para que la terminal y las extensiones funcionen bien.
+1. Abre **Visual Studio Code**.
+2. Ve a **Archivo > Abrir Carpeta...** (File > Open Folder...).
+3. Navega hasta: `AgroVox / Fase 1 / Front-End / agrovox-dashboard` y selecciona esa última carpeta (`agrovox-dashboard`).
+
+### Paso 3: Instalar las dependencias
+1. En VS Code, abre la terminal integrada (puedes presionar `` Ctrl + ` `` o ir arriba a **Ver > Terminal**).
+2. Asegúrate de que la ruta en la terminal termine en `.../agrovox-dashboard`.
+3. Ejecuta el siguiente comando para instalar todas las librerías exactas (React, Leaflet, Tailwind, etc.):
+\`\`\`bash
+npm install
+\`\`\`
+*(Esto puede tardar un par de minutos dependiendo de tu internet).*
+
+### Paso 4: Levantar el servidor local
+Una vez que termine la instalación, arranca el entorno de desarrollo con:
+\`\`\`bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+\`\`\`
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Paso 5: Ver el Dashboard
+Abre tu navegador web favorito (Chrome, Edge, Brave) y entra a:
+*[http://localhost:3000](http://localhost:3000)**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Estructura principal para guiarse
+- `src/app/page.tsx`: Es el Dashboard principal (la vista macro).
+- `src/app/clientes/[id]/page.tsx`: Es la vista de detalle por cliente/fundo.
+- `src/components/`: Aquí están los mapas y componentes reutilizables
