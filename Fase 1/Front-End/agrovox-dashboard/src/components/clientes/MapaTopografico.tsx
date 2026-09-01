@@ -27,14 +27,14 @@ const iconoGateway = L.divIcon({
 
 // Coordenadas simuladas del polígono de riego (Sector 1)
 const coordenadasSector: [number, number][] = [
-  [-34.170, -70.740],
-  [-34.170, -70.735],
-  [-34.175, -70.735],
-  [-34.175, -70.740],
+  [-33.734715, -70.767818],
+  [-33.735538, -70.765005],
+  [-33.734799, -70.764691],
+  [-33.734096729045724, -70.76718793525508],
 ];
 
 export default function MapaTopografico() {
-  const centro: [number, number] = [-34.1725, -70.7375];
+  const centro: [number, number] = [-33.7347105121274, -70.76633205905223];
 
   return (
     <MapContainer center={centro} zoom={16} className="w-full h-full z-0">
@@ -51,15 +51,15 @@ export default function MapaTopografico() {
       />
 
       {/* Gateway Principal */}
-      <Marker position={[-34.172, -70.738]} icon={iconoGateway}>
+      <Marker position={[-33.73510941037542, -70.76456741699839]} icon={iconoGateway}>
         <Popup className="rounded-lg"><span className="font-bold text-blue-600">Gateway LoRa Central</span><br/>Caseta de Riego</Popup>
       </Marker>
 
       {/* Nodos IoT */}
-      <Marker position={[-34.171, -70.739]} icon={crearIconoNodo('ok')}>
+      <Marker position={[-33.73449823408805, -70.76705114261524]} icon={crearIconoNodo('ok')}>
         <Popup className="rounded-lg"><span className="font-bold">AGV-010</span><br/>Batería: 98%</Popup>
       </Marker>
-      <Marker position={[-34.174, -70.736]} icon={crearIconoNodo('alerta')}>
+      <Marker position={[-33.734944348595555, -70.76552764785242]} icon={crearIconoNodo('alerta')}>
         <Popup className="rounded-lg"><span className="font-bold text-red-600">AGV-011 (Alerta)</span><br/>Cavitación Detectada</Popup>
       </Marker>
     </MapContainer>
