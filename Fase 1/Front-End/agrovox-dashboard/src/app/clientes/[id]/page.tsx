@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, use } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { 
@@ -22,11 +22,12 @@ const MapaTopografico = dynamic(
 );
 
 interface ClientePageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default function ClienteDetalle({ params }: ClientePageProps) {
-  const clienteId = params.id;
+  const { id: clienteId } = use(params);
+  
   const [activeTab, setActiveTab] = useState<'resumen' | 'inventario' | 'administrativo'>('resumen');
 
   return (
