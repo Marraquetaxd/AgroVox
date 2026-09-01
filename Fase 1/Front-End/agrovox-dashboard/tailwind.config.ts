@@ -16,7 +16,6 @@ const config: Config = {
           600: '#16a34a',
           700: '#15803d',
         },
-        agrodark: '#0f172a'
       }
     },
   },
