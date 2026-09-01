@@ -1,4 +1,5 @@
 # AgroVox Dashboard - Fase 1 (Front-End)
+# https://jocular-crisp-b36b04.netlify.app/clientes
 
 Interfaz de monitoreo para la red de nodos IoT del proyecto AgroVox. Desarrollado con Next.js, Tailwind CSS y Lucide Icons.
 
