@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_AgroVox" targetNamespace="http://agrovox.cl/bpmn">
+  <bpmn:collaboration id="Collab_AgroVox">
+    <bpmn:participant id="Pool_Sistema" name="Sistema AgroVox" processRef="Process_Sistema" />
+    <bpmn:participant id="Pool_Agricultor" name="Agricultor" processRef="Process_Agricultor" />
+    <bpmn:messageFlow id="MF1" name="Mensaje WhatsApp" sourceRef="Task_Enviar" targetRef="Task_Recibir" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Sistema" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_nodo" name="Nodo (Edge)"><bpmn:flowNodeRef>Start_1</bpmn:flowNodeRef><bpmn:flowNodeRef>Task_Capturar</bpmn:flowNodeRef><bpmn:flowNodeRef>Task_Clasificar</bpmn:flowNodeRef><bpmn:flowNodeRef>Gw_Cavitacion</bpmn:flowNodeRef><bpmn:flowNodeRef>End_Descarta</bpmn:flowNodeRef><bpmn:flowNodeRef>Task_Transmitir</bpmn:flowNodeRef><bpmn:flowNodeRef>Bd_LoRa</bpmn:flowNodeRef><bpmn:flowNodeRef>Gw_ReLoRa</bpmn:flowNodeRef><bpmn:flowNodeRef>End_Desconectado</bpmn:flowNodeRef></bpmn:lane>
+      <bpmn:lane id="Lane_backend" name="Backend Cloud"><bpmn:flowNodeRef>Task_Registrar</bpmn:flowNodeRef><bpmn:flowNodeRef>Task_Evaluar</bpmn:flowNodeRef><bpmn:flowNodeRef>Gw_Umbral</bpmn:flowNodeRef><bpmn:flowNodeRef>End_SinAlerta</bpmn:flowNodeRef><bpmn:flowNodeRef>Task_Generar</bpmn:flowNodeRef><bpmn:flowNodeRef>Task_Enviar</bpmn:flowNodeRef><bpmn:flowNodeRef>Bd_WA</bpmn:flowNodeRef><bpmn:flowNodeRef>Gw_ReWA</bpmn:flowNodeRef><bpmn:flowNodeRef>End_NoEntregada</bpmn:flowNodeRef></bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start_1" name="Inicio"><bpmn:outgoing>F1</bpmn:outgoing></bpmn:startEvent>
+    <bpmn:task id="Task_Capturar" name="Capturar señal acústica"><bpmn:incoming>F1</bpmn:incoming><bpmn:outgoing>F2</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="Task_Clasificar" name="Clasificar evento (TinyML)"><bpmn:incoming>F2</bpmn:incoming><bpmn:outgoing>F3</bpmn:outgoing></bpmn:task>
+    <bpmn:exclusiveGateway id="Gw_Cavitacion" name="¿Es cavitación?"><bpmn:incoming>F3</bpmn:incoming><bpmn:outgoing>F4</bpmn:outgoing><bpmn:outgoing>F5</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:endEvent id="End_Descarta" name="Descarta evento (sigue midiendo)"><bpmn:incoming>F4</bpmn:incoming></bpmn:endEvent>
+    <bpmn:task id="Task_Transmitir" name="Transmitir vía LoRa"><bpmn:incoming>F5</bpmn:incoming><bpmn:incoming>F7</bpmn:incoming><bpmn:outgoing>F9</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="Task_Registrar" name="Registrar evento en BD"><bpmn:incoming>F9</bpmn:incoming><bpmn:outgoing>F10</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="Task_Evaluar" name="Evaluar umbral P50/P88"><bpmn:incoming>F10</bpmn:incoming><bpmn:outgoing>F11</bpmn:outgoing></bpmn:task>
+    <bpmn:exclusiveGateway id="Gw_Umbral" name="¿Supera umbral?"><bpmn:incoming>F11</bpmn:incoming><bpmn:outgoing>F12</bpmn:outgoing><bpmn:outgoing>F13</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:endEvent id="End_SinAlerta" name="Evento registrado sin alerta"><bpmn:incoming>F12</bpmn:incoming></bpmn:endEvent>
+    <bpmn:task id="Task_Generar" name="Generar alerta"><bpmn:incoming>F13</bpmn:incoming><bpmn:outgoing>F14</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="Task_Enviar" name="Enviar notificación WhatsApp"><bpmn:incoming>F14</bpmn:incoming><bpmn:incoming>F16</bpmn:incoming></bpmn:task>
+    <bpmn:boundaryEvent id="Bd_LoRa" name="Fallo de transmisión" attachedToRef="Task_Transmitir"><bpmn:outgoing>F6</bpmn:outgoing><bpmn:errorEventDefinition id="Bd_LoRa_err" /></bpmn:boundaryEvent>
+    <bpmn:exclusiveGateway id="Gw_ReLoRa" name="¿Reintentos &lt; 3?"><bpmn:incoming>F6</bpmn:incoming><bpmn:outgoing>F7</bpmn:outgoing><bpmn:outgoing>F8</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:endEvent id="End_Desconectado" name="Nodo pasa a estado Desconectado"><bpmn:incoming>F8</bpmn:incoming></bpmn:endEvent>
+    <bpmn:boundaryEvent id="Bd_WA" name="Fallo de entrega" attachedToRef="Task_Enviar"><bpmn:outgoing>F15</bpmn:outgoing><bpmn:errorEventDefinition id="Bd_WA_err" /></bpmn:boundaryEvent>
+    <bpmn:exclusiveGateway id="Gw_ReWA" name="¿Reintentos &lt; 3?"><bpmn:incoming>F15</bpmn:incoming><bpmn:outgoing>F16</bpmn:outgoing><bpmn:outgoing>F17</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:endEvent id="End_NoEntregada" name="Alerta no entregada (reintentar más tarde)"><bpmn:incoming>F17</bpmn:incoming></bpmn:endEvent>
+    <bpmn:sequenceFlow id="F1" sourceRef="Start_1" targetRef="Task_Capturar" />
+    <bpmn:sequenceFlow id="F2" sourceRef="Task_Capturar" targetRef="Task_Clasificar" />
+    <bpmn:sequenceFlow id="F3" sourceRef="Task_Clasificar" targetRef="Gw_Cavitacion" />
+    <bpmn:sequenceFlow id="F4" name="No" sourceRef="Gw_Cavitacion" targetRef="End_Descarta" />
+    <bpmn:sequenceFlow id="F5" name="Sí" sourceRef="Gw_Cavitacion" targetRef="Task_Transmitir" />
+    <bpmn:sequenceFlow id="F9" name="Envío por LoRa → Gateway → MQTT" sourceRef="Task_Transmitir" targetRef="Task_Registrar" />
+    <bpmn:sequenceFlow id="F10" sourceRef="Task_Registrar" targetRef="Task_Evaluar" />
+    <bpmn:sequenceFlow id="F11" sourceRef="Task_Evaluar" targetRef="Gw_Umbral" />
+    <bpmn:sequenceFlow id="F12" name="No" sourceRef="Gw_Umbral" targetRef="End_SinAlerta" />
+    <bpmn:sequenceFlow id="F13" name="Sí" sourceRef="Gw_Umbral" targetRef="Task_Generar" />
+    <bpmn:sequenceFlow id="F14" sourceRef="Task_Generar" targetRef="Task_Enviar" />
+    <bpmn:sequenceFlow id="F6" sourceRef="Bd_LoRa" targetRef="Gw_ReLoRa" />
+    <bpmn:sequenceFlow id="F7" name="Sí (reintentar)" sourceRef="Gw_ReLoRa" targetRef="Task_Transmitir" />
+    <bpmn:sequenceFlow id="F8" name="No" sourceRef="Gw_ReLoRa" targetRef="End_Desconectado" />
+    <bpmn:sequenceFlow id="F15" sourceRef="Bd_WA" targetRef="Gw_ReWA" />
+    <bpmn:sequenceFlow id="F16" name="Sí (reintentar)" sourceRef="Gw_ReWA" targetRef="Task_Enviar" />
+    <bpmn:sequenceFlow id="F17" name="No" sourceRef="Gw_ReWA" targetRef="End_NoEntregada" />
+  </bpmn:process>
+  <bpmn:process id="Process_Agricultor" isExecutable="false">
+    <bpmn:receiveTask id="Task_Recibir" name="Recibir alerta"><bpmn:outgoing>F18</bpmn:outgoing></bpmn:receiveTask>
+    <bpmn:task id="Task_Regar" name="Regar sector afectado"><bpmn:incoming>F18</bpmn:incoming><bpmn:outgoing>F19</bpmn:outgoing></bpmn:task>
+    <bpmn:endEvent id="End_Regado" name="Cultivo regado a tiempo"><bpmn:incoming>F19</bpmn:incoming></bpmn:endEvent>
+    <bpmn:sequenceFlow id="F18" sourceRef="Task_Recibir" targetRef="Task_Regar" />
+    <bpmn:sequenceFlow id="F19" sourceRef="Task_Regar" targetRef="End_Regado" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_1">
+    <bpmndi:BPMNPlane id="Plane_1" bpmnElement="Collab_AgroVox">
+      <bpmndi:BPMNShape id="Pool_Sistema_di" bpmnElement="Pool_Sistema" isHorizontal="true" bioc:stroke="#3B6D11" bioc:fill="#FFFFFF">
+        <dc:Bounds x="40" y="30" width="1420" height="700" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_nodo_di" bpmnElement="Lane_nodo" isHorizontal="true" bioc:stroke="#B4B2A9" bioc:fill="#FFFFFF">
+        <dc:Bounds x="70" y="30" width="1390" height="380" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_backend_di" bpmnElement="Lane_backend" isHorizontal="true" bioc:stroke="#B4B2A9" bioc:fill="#FFFFFF">
+        <dc:Bounds x="70" y="410" width="1390" height="320" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Pool_Agricultor_di" bpmnElement="Pool_Agricultor" isHorizontal="true" bioc:stroke="#854F0B" bioc:fill="#FFFFFF">
+        <dc:Bounds x="40" y="770" width="1420" height="160" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_1_di" bpmnElement="Start_1" bioc:stroke="#2C2C2A" bioc:fill="#FFFFFF">
+        <dc:Bounds x="87" y="152" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Capturar_di" bpmnElement="Task_Capturar" bioc:stroke="#3B6D11" bioc:fill="#EAF3DE">
+        <dc:Bounds x="155" y="140" width="150" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Clasificar_di" bpmnElement="Task_Clasificar" bioc:stroke="#3B6D11" bioc:fill="#EAF3DE">
+        <dc:Bounds x="335" y="140" width="160" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gw_Cavitacion_di" bpmnElement="Gw_Cavitacion" bioc:stroke="#854F0B" bioc:fill="#FDF2D9">
+        <dc:Bounds x="540" y="145" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Descarta_di" bpmnElement="End_Descarta" bioc:stroke="#2C2C2A" bioc:fill="#FFFFFF">
+        <dc:Bounds x="547" y="62" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Transmitir_di" bpmnElement="Task_Transmitir" bioc:stroke="#3B6D11" bioc:fill="#EAF3DE">
+        <dc:Bounds x="655" y="140" width="150" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Registrar_di" bpmnElement="Task_Registrar" bioc:stroke="#3B6D11" bioc:fill="#EAF3DE">
+        <dc:Bounds x="155" y="440" width="170" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Evaluar_di" bpmnElement="Task_Evaluar" bioc:stroke="#3B6D11" bioc:fill="#EAF3DE">
+        <dc:Bounds x="355" y="440" width="170" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gw_Umbral_di" bpmnElement="Gw_Umbral" bioc:stroke="#854F0B" bioc:fill="#FDF2D9">
+        <dc:Bounds x="570" y="445" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_SinAlerta_di" bpmnElement="End_SinAlerta" bioc:stroke="#2C2C2A" bioc:fill="#FFFFFF">
+        <dc:Bounds x="577" y="542" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Generar_di" bpmnElement="Task_Generar" bioc:stroke="#3B6D11" bioc:fill="#EAF3DE">
+        <dc:Bounds x="685" y="440" width="140" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Enviar_di" bpmnElement="Task_Enviar" bioc:stroke="#3B6D11" bioc:fill="#EAF3DE">
+        <dc:Bounds x="865" y="440" width="180" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Recibir_di" bpmnElement="Task_Recibir" bioc:stroke="#854F0B" bioc:fill="#F7E3C0">
+        <dc:Bounds x="155" y="800" width="150" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Regar_di" bpmnElement="Task_Regar" bioc:stroke="#854F0B" bioc:fill="#F7E3C0">
+        <dc:Bounds x="335" y="800" width="170" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Regado_di" bpmnElement="End_Regado" bioc:stroke="#2C2C2A" bioc:fill="#FFFFFF">
+        <dc:Bounds x="547" y="812" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Bd_LoRa_di" bpmnElement="Bd_LoRa" bioc:stroke="#A33B1E" bioc:fill="#FBE1D8">
+        <dc:Bounds x="757" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gw_ReLoRa_di" bpmnElement="Gw_ReLoRa" bioc:stroke="#A33B1E" bioc:fill="#FBE1D8">
+        <dc:Bounds x="750" y="260" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Desconectado_di" bpmnElement="End_Desconectado" bioc:stroke="#A33B1E" bioc:fill="#FBE1D8">
+        <dc:Bounds x="757" y="337" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Bd_WA_di" bpmnElement="Bd_WA" bioc:stroke="#A33B1E" bioc:fill="#FBE1D8">
+        <dc:Bounds x="992" y="482" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gw_ReWA_di" bpmnElement="Gw_ReWA" bioc:stroke="#A33B1E" bioc:fill="#FBE1D8">
+        <dc:Bounds x="985" y="550" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_NoEntregada_di" bpmnElement="End_NoEntregada" bioc:stroke="#A33B1E" bioc:fill="#FBE1D8">
+        <dc:Bounds x="992" y="632" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="F1_di" bpmnElement="F1" bioc:stroke="#2C2C2A">
+        <di:waypoint x="123" y="170" />
+        <di:waypoint x="155" y="170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F2_di" bpmnElement="F2" bioc:stroke="#2C2C2A">
+        <di:waypoint x="305" y="170" />
+        <di:waypoint x="335" y="170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F3_di" bpmnElement="F3" bioc:stroke="#2C2C2A">
+        <di:waypoint x="495" y="170" />
+        <di:waypoint x="540" y="170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F4_di" bpmnElement="F4" bioc:stroke="#2C2C2A">
+        <di:waypoint x="565" y="145" />
+        <di:waypoint x="565" y="98" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F5_di" bpmnElement="F5" bioc:stroke="#2C2C2A">
+        <di:waypoint x="590" y="170" />
+        <di:waypoint x="655" y="170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F9_di" bpmnElement="F9" bioc:stroke="#2C2C2A">
+        <di:waypoint x="680" y="200" />
+        <di:waypoint x="680" y="390" />
+        <di:waypoint x="240" y="390" />
+        <di:waypoint x="240" y="440" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F10_di" bpmnElement="F10" bioc:stroke="#2C2C2A">
+        <di:waypoint x="325" y="470" />
+        <di:waypoint x="355" y="470" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F11_di" bpmnElement="F11" bioc:stroke="#2C2C2A">
+        <di:waypoint x="525" y="470" />
+        <di:waypoint x="570" y="470" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F12_di" bpmnElement="F12" bioc:stroke="#2C2C2A">
+        <di:waypoint x="595" y="495" />
+        <di:waypoint x="595" y="542" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F13_di" bpmnElement="F13" bioc:stroke="#2C2C2A">
+        <di:waypoint x="620" y="470" />
+        <di:waypoint x="685" y="470" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F14_di" bpmnElement="F14" bioc:stroke="#2C2C2A">
+        <di:waypoint x="825" y="470" />
+        <di:waypoint x="865" y="470" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF1_di" bpmnElement="MF1" bioc:stroke="#5F5E5A">
+        <di:waypoint x="880" y="500" />
+        <di:waypoint x="880" y="750" />
+        <di:waypoint x="230" y="750" />
+        <di:waypoint x="230" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F18_di" bpmnElement="F18" bioc:stroke="#2C2C2A">
+        <di:waypoint x="305" y="830" />
+        <di:waypoint x="335" y="830" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F19_di" bpmnElement="F19" bioc:stroke="#2C2C2A">
+        <di:waypoint x="505" y="830" />
+        <di:waypoint x="547" y="830" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F6_di" bpmnElement="F6" bioc:stroke="#A33B1E">
+        <di:waypoint x="775" y="218" />
+        <di:waypoint x="775" y="260" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F7_di" bpmnElement="F7" bioc:stroke="#A33B1E">
+        <di:waypoint x="750" y="285" />
+        <di:waypoint x="730" y="285" />
+        <di:waypoint x="730" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F8_di" bpmnElement="F8" bioc:stroke="#A33B1E">
+        <di:waypoint x="775" y="310" />
+        <di:waypoint x="775" y="337" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F15_di" bpmnElement="F15" bioc:stroke="#A33B1E">
+        <di:waypoint x="1010" y="518" />
+        <di:waypoint x="1010" y="550" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F16_di" bpmnElement="F16" bioc:stroke="#A33B1E">
+        <di:waypoint x="985" y="575" />
+        <di:waypoint x="935" y="575" />
+        <di:waypoint x="935" y="500" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F17_di" bpmnElement="F17" bioc:stroke="#A33B1E">
+        <di:waypoint x="1010" y="600" />
+        <di:waypoint x="1010" y="632" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

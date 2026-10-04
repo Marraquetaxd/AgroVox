@@ -1,0 +1,71 @@
+@startuml AgroVox_Componentes_3Capas
+skinparam componentStyle rectangle
+skinparam backgroundColor #FFFFFF
+skinparam component {
+  BackgroundColor #EAF3DE
+  BorderColor #3B6D11
+  FontColor #2C2C2A
+}
+skinparam interface {
+  BackgroundColor #FFFFFF
+  BorderColor #0F6E56
+}
+skinparam package {
+  BackgroundColor #F6F4EE
+  BorderColor #2C2C2A
+  FontColor #2C2C2A
+  FontSize 15
+  FontStyle bold
+}
+skinparam database {
+  BackgroundColor #FAC775
+  BorderColor #854F0B
+}
+skinparam ArrowColor #5F5E5A
+skinparam defaultFontName Arial
+
+title Diagrama de Componentes — Arquitectura de 3 Capas (AgroVox)
+
+package "1. Capa de Percepción y Borde" {
+  component "CapturaSeñal" as Captura
+  component "InferenciaTinyML" as Inferencia
+  component "ComunicacionLoRa" as ComLoRa
+
+  Captura -down-> Inferencia : datos crudos
+  Inferencia -down-> ComLoRa : evento clasificado
+}
+
+package "2. Capa de Red" {
+  [Gateway LoRa-MQTT] as Gateway
+  interface "IPublicarEvento" as IPublicar
+  Gateway -up- IPublicar
+}
+
+package "3. Capa Cloud y Backend" {
+  [Backend API] as Backend
+  component "ControladorEventos" as CtrlEventos
+  component "ServicioAlertas" as SrvAlertas
+  component "RepositorioDatos" as Repo
+  component "Dashboard Web\n(Administración)" as Dashboard
+  component "Servicio WhatsApp\n(Cliente Final)" as WhatsApp
+
+  interface "IRegistrarEvento" as IRegistrar
+  interface "IConsultarEstado" as IConsultar
+
+  Backend -up- IRegistrar
+  Backend -up- IConsultar
+  Backend --> CtrlEventos
+  CtrlEventos --> SrvAlertas : evalúa umbral
+  CtrlEventos --> Repo
+  SrvAlertas --> Repo
+  Dashboard ..> IConsultar : consume
+  SrvAlertas ..> WhatsApp : dispara alerta
+
+  database "PostgreSQL" as DB
+  Repo ..> DB : SQL
+}
+
+ComLoRa ..> IPublicar : usa
+Gateway ..> IRegistrar : consume (HTTP/MQTT)
+
+@enduml
