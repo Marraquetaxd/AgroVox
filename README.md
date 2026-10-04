@@ -34,7 +34,7 @@ A diferencia de alternativas satelitales (indirectas y de reacción tardía) o s
 |---|---|
 | Percepción y Borde | ESP32, disco piezoeléctrico, preamplificador OPA365, panel solar, TensorFlow Lite Micro (TinyML) |
 | Red | LoRa, Gateway LoRa–MQTT |
-| Cloud y Backend | Node.js / Python, PostgreSQL (hospedado en Supabase), API REST |
+| Cloud y Backend | Node.js / Python, PostgreSQL, API REST |
 | Frontend | Dashboard Web de administración |
 | Notificaciones | WhatsApp Business API |
 | IA / Modelado | Python, TensorFlow/Keras, scikit-learn, cuantización int8 |
